@@ -1,0 +1,36 @@
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * 1"
+
+name: Anti the Facists
+
+jobs:
+  build_and_test:
+    name: Anti the Facists
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml', 'src/**/*.rs') }}
+      - name: Install toolchain
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build program
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo build -r
+      - name: Run program
+        run: ./target/release/anti-facist-indoctrination
+        env:
+          AFI_COOKIE: ${{ secrets.AFI_COOKIE }}
+          AFI_TOKEN: ${{ secrets.AFI_TOKEN }}
